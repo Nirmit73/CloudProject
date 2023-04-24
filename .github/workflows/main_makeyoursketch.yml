@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'MakeYourSketch'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F7B2C1B13D934666AF70AEA2C7B5D1B6 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9008453900164EF5974EC5E7DF787CD0 }}
