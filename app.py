@@ -1,34 +1,34 @@
 import streamlit as st
-import cv2
 import base64
-from PIL import Image
+from PIL import Image, ImageOps, ImageFilter
 import numpy as np
 
-def img2sketch(img, k_size):
+def img2sketch(photo, k_size):
 
-    # Convert to Grey Image
-    grey_img=cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Convert to Grayscale
+    grey_img = photo.convert('L')
 
-    # Invert Image
-    invert_img=cv2.bitwise_not(grey_img)
+    # Invert Grayscale Image
+    inv_img = ImageOps.invert(grey_img)
 
-    # Blur image
-    blur_img=cv2.GaussianBlur(invert_img, (k_size,k_size),0)
+    # Apply Gaussian Blur
+    blur_img = inv_img.filter(ImageFilter.GaussianBlur(radius=k_size))
 
     # Invert Blurred Image
-    invblur_img=cv2.bitwise_not(blur_img)
+    inv_blur_img = ImageOps.invert(blur_img)
 
-    # Sketch Image
-    sketch_img=cv2.divide(grey_img,invblur_img, scale=256.0)
+    # Convert Image to NumPy Array
+    img_array = np.array(inv_blur_img)
 
-    # Save Sketch 
-    return sketch_img
+    sketch_array = np.array(grey_img).astype(float)
+    invblur_array = np.array(inv_blur_img).astype(float)
+    sketch_array /= invblur_array
+    sketch_array *= 256
+    sketch_array = np.clip(sketch_array, 0, 255).astype(np.uint8)
+    sketch_img = Image.fromarray(sketch_array)
+    
+    return (sketch_img)
 
-def process_image(image):
-    image = np.array(image.convert('RGB'))
-    image = cv2.cvtColor(image, 1)
-    image= img2sketch(image, 7)
-    return image
 
 def main():
     st.title("Upload Image")
@@ -38,7 +38,7 @@ def main():
     if file_up is not None:
         image = Image.open(file_up)
         st.image(image, caption='Uploaded Image', use_column_width=True)
-        img = process_image(image)
+        img = img2sketch(image,7)
         st.image(img, caption='Sketch Image', use_column_width=True)
 
 if __name__ == '__main__':
